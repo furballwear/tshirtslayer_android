@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="hello">Hello World, TShirtSlayerActivity!</string>
+    <string name="app_name">TShirtSlayer</string>
+    <string name="confirm">Confirm</string>
+    <string name="pass">Password</string>
+    <string name="itemTitle">TShirtSlayer Entry</string>
+    <string name="user">Username</string>
+	<string name="menu_app_settings_title">Settings</string>
+	<string name="menu_app_quit">Quit</string>
+    <string name="item_prompt">Describe your TShirtSlayer entry</string>
+    <string name="item_trade_prompt">Is this for trade?</string>
+    
+    <string-array name="item_types">
+        <item>TShirt / Longsleeve</item>
+        <item>Battlejacket</item>
+        <item>Other collectable item</item>        
+    </string-array>
+    
+    <string-array name="item_trade_types">
+        <item>Not for sale or trade</item>
+        <item>Sale only</item>
+        <item>Sale or Trade</item>        
+        <item>Trade Only</item>                
+    </string-array>
+        
+</resources>

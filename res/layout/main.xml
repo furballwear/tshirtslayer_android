@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout android:id="@+id/LinearLayout01"
+android:layout_width="fill_parent" android:layout_height="fill_parent"
+xmlns:android="http://schemas.android.com/apk/res/android"
+android:weightSum="1">
+    <LinearLayout android:id="@+id/linearLayout1" android:layout_height="match_parent" android:orientation="vertical" android:layout_width="match_parent">
+	<ImageView android:id="@+id/logo" android:src="@drawable/logo"
+	android:layout_height="184dp" android:layout_width="match_parent"></ImageView>
+    <TextView android:id="@+id/mainStatus" android:textAppearance="?android:attr/textAppearanceMedium" android:layout_height="wrap_content" android:text="Use the 'share' button on your gallery or take a photo" android:layout_width="match_parent"></TextView>
+
+</LinearLayout>
+
+</LinearLayout>
+
