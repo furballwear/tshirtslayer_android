@@ -27,8 +27,7 @@ public class TshirtslayerActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main);
 		checkSetup(this);
-		
-		
+
 		Intent i = getIntent();
 		String action = i.getAction();
 
@@ -54,59 +53,61 @@ public class TshirtslayerActivity extends Activity {
 		}
 	}
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu){
-      MenuInflater inflater = getMenuInflater();
-      inflater.inflate(R.menu.app_menu, menu);
-      return true;
-    }
-    
-    // Called when menu item is selected //
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item){
-      
-      switch(item.getItemId()){
-      case R.id.app_quit:
-	      setResult(RESULT_OK);
-	      finish();    	  
-	  break;
-      case R.id.app_settings:
-        // Launch Prefs activity
-		Intent i_settings = new Intent(TshirtslayerActivity.this, settings.class);
-        startActivity(i_settings);
-        break;
-        
-      }    
-      return true;
-    }
-	
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		MenuInflater inflater = getMenuInflater();
+		inflater.inflate(R.menu.app_menu, menu);
+		return true;
+	}
+
+	// Called when menu item is selected //
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+
+		switch (item.getItemId()) {
+		case R.id.app_quit:
+			setResult(RESULT_OK);
+			finish();
+			break;
+		case R.id.app_settings:
+			// Launch Prefs activity
+			Intent i_settings = new Intent(TshirtslayerActivity.this,
+					settings.class);
+			startActivity(i_settings);
+			break;
+
+		}
+		return true;
+	}
+
 	// check settings are complete, if not, show message and launch
 	private void checkSetup(Context context) {
 
-        SharedPreferences app_preferences = PreferenceManager.getDefaultSharedPreferences(this);
-        cUser = app_preferences.getString("user", "");
-        cPass = app_preferences.getString("pass", "");
-        
-        if(cUser.length() ==0 || cPass.length() == 0 ) {
+		SharedPreferences app_preferences = PreferenceManager
+				.getDefaultSharedPreferences(this);
+		cUser = app_preferences.getString("user", "");
+		cPass = app_preferences.getString("pass", "");
+
+		if (cUser.length() == 0 || cPass.length() == 0) {
 			CharSequence text = "Please enter your username and password";
 			int duration = Toast.LENGTH_SHORT;
-			Toast toast = Toast.makeText(context, text, duration);  
+			Toast toast = Toast.makeText(context, text, duration);
 			Intent i_settings = new Intent(context, settings.class);
-	        startActivity(i_settings);
-			toast.show();		
-        }
-		
+			startActivity(i_settings);
+			toast.show();
+		}
+
 	}
-	
+
 	// @todo: this needs to go into a queue
 	private void upload(ArrayList contentUris, Context context) {
-		
+
 		Intent i_item = new Intent(TshirtslayerActivity.this, item.class);
-        startActivity(i_item);
-		
+		startActivity(i_item);
+
 		for (int i = 0; i < contentUris.size(); i++) {
 			Uri stream = (Uri) contentUris.get(i);
-			Log.i(TAG, stream.getPath());			
+			Log.i(TAG, stream.getPath());
 		}
 	}
 }
