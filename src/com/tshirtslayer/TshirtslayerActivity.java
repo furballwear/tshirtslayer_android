@@ -98,14 +98,13 @@ public class TshirtslayerActivity extends Activity {
 		}
 
 	}
-	
+
 	private void upload(ArrayList contentUris, Context context) {
 		String UriPaths;
-		
 
 		Intent i_item = new Intent(TshirtslayerActivity.this, item.class);
-		
-		i_item.putStringArrayListExtra("tshirtslayer_contentUris",contentUris);
+
+		i_item.putStringArrayListExtra("tshirtslayer_contentUris", contentUris);
 		startActivity(i_item);
 
 	}

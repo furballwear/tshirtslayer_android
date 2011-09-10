@@ -110,14 +110,11 @@ public class item extends Activity {
                     public void onItemSelected(
                             AdapterView<?> parent, View view, int position, long id) {
                         sTradeType = parent.getItemAtPosition(position).toString();
-                        showToast(sTradeType);
                     }
 
                     public void onNothingSelected(AdapterView<?> parent) {
                     }
                 });
-
-		
 		
 		Button confirmButton = (Button) findViewById(R.id.addButton);
 
@@ -127,19 +124,13 @@ public class item extends Activity {
 			    EditText mTitle   = (EditText)findViewById(R.id.item_title);
 			    
 				ArrayList<String> contentUris = getIntent().getStringArrayListExtra("tshirtslayer_contentUris");
-/*				Object uri[] = contentUris.toArray();
-				for(int n=0; n<uri.length; n++) {
-					Log.i(TAG, (String)uri[n].toString() );
-				}
-*/
 				// check all the fields are entered and ready
 				if (sType.length() > 0  && sYear.length() > 0 && sTradeType.length() > 0 
-						&& (mTitle.getText().toString().equals(getText(R.string.item_title_default)) == false) ) {
+						&& mTitle.getText().length() >0  ) {
 
 					sTitle = mTitle.getText().toString();
 					long id = dbHelper.createItem(sTitle, sType, sYear, sTradeType, contentUris);
 
-					showToast("Queued for addition!");					
 					setResult(RESULT_OK);
 					finish();
 					
