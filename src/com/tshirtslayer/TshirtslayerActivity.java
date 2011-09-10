@@ -98,16 +98,15 @@ public class TshirtslayerActivity extends Activity {
 		}
 
 	}
-
-	// @todo: this needs to go into a queue
+	
 	private void upload(ArrayList contentUris, Context context) {
+		String UriPaths;
+		
 
 		Intent i_item = new Intent(TshirtslayerActivity.this, item.class);
+		
+		i_item.putStringArrayListExtra("tshirtslayer_contentUris",contentUris);
 		startActivity(i_item);
 
-		for (int i = 0; i < contentUris.size(); i++) {
-			Uri stream = (Uri) contentUris.get(i);
-			Log.i(TAG, stream.getPath());
-		}
 	}
 }
