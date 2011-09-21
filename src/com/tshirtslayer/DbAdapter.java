@@ -8,7 +8,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
-import android.util.Log;
+
 
 public class DbAdapter {
 
@@ -35,7 +35,7 @@ public class DbAdapter {
 	}
 
 	public DbAdapter open() throws SQLException {
-		dbHelper = new DatabaseHelper(context);
+		dbHelper = new DatabaseHelper(this.context);
 		database = dbHelper.getWritableDatabase();
 		return this;
 	}

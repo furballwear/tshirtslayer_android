@@ -3,10 +3,15 @@ package com.tshirtslayer;
 import java.util.ArrayList;
 
 import android.app.Activity;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -17,9 +22,19 @@ import android.view.MenuItem;
 
 public class TshirtslayerActivity extends Activity {
 
+    private NotificationManager mNotificationManager;
+
+    // Use our layout id for a unique identifier
+    private static int MOOD_NOTIFICATIONS = R.layout.progress_update;
+
 	private static final String TAG = "TshirtSlayer Application: ";
 	private String cUser = new String();
 	private String cPass = new String();
+	protected uploadMechanism _uploadMechanism;
+
+	void showToast(CharSequence msg) {
+		Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
+	}
 
 	/** Called when the activity is first created. */
 	@Override
@@ -30,7 +45,8 @@ public class TshirtslayerActivity extends Activity {
 
 		Intent i = getIntent();
 		String action = i.getAction();
-
+		new uploadMechanism().execute();
+		
 		if (Intent.ACTION_SEND.equals(action)) {
 			String type = i.getType();
 			checkSetup(this);
@@ -50,6 +66,32 @@ public class TshirtslayerActivity extends Activity {
 			// Bundle extras = getIntent().getExtras();
 			ArrayList l = i.getParcelableArrayListExtra(Intent.EXTRA_STREAM);
 			upload(l, this);
+		}
+
+	}
+
+	/**
+	 * sub-class of AsyncTask
+	 */
+	protected class uploadMechanism extends AsyncTask<Context, Integer, String> {
+
+	     protected int doInBackground() {
+             publishProgress(1000);
+	         return 100;
+	     }
+
+	     protected void onProgressUpdate(Integer... progress) {
+	    	   setProgress(progress[0]);
+	     }
+
+	     protected void onPostExecute(Long result) {
+	         showToast("Completed");
+	     }
+
+		@Override
+		protected String doInBackground(Context... arg0) {
+			// TODO Auto-generated method stub
+			return null;
 		}
 	}
 
@@ -100,12 +142,27 @@ public class TshirtslayerActivity extends Activity {
 	}
 
 	private void upload(ArrayList contentUris, Context context) {
-		String UriPaths;
-
 		Intent i_item = new Intent(TshirtslayerActivity.this, item.class);
-
 		i_item.putStringArrayListExtra("tshirtslayer_contentUris", contentUris);
 		startActivity(i_item);
-
+		
 	}
+	
+
+
+    private void triggerNotification()
+    {
+        CharSequence title = "TshirtSlayer Uploader";
+        CharSequence message = "Sending to website...";
+ 
+        NotificationManager notificationManager = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
+        Notification notification = new Notification(R.drawable.icon, "A New Message!", System.currentTimeMillis());
+ 
+        Intent notificationIntent = new Intent(this, TshirtslayerActivity.class);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
+ 
+        notification.setLatestEventInfo(TshirtslayerActivity.this, title, message, pendingIntent);
+        notificationManager.notify(1, notification);
+    }    
+
 }
