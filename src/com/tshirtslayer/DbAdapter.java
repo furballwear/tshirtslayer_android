@@ -84,9 +84,14 @@ public class DbAdapter {
 	 * Return a Cursor positioned at the defined item
 	 */
 	public Cursor fetchItem(long rowId) throws SQLException {
-		Cursor mCursor = database.query(true, DATABASE_TABLE, new String[] {
+/*		Cursor mCursor = database.query(true, DATABASE_TABLE, new String[] {
 				KEY_ROWID, KEY_TITLE, KEY_TYPE, KEY_YEAR, KEY_TRADE_TYPE },
 				KEY_ROWID + "=" + rowId, null, null, null, null, null);
+*/
+		Cursor mCursor = database.query(true, DATABASE_TABLE, new String[] {
+				KEY_ROWID, KEY_TITLE, KEY_TYPE, KEY_YEAR, KEY_TRADE_TYPE },
+				null, null, null, null, null, null);
+
 		if (mCursor != null) {
 			mCursor.moveToFirst();
 		}
