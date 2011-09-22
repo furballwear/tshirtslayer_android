@@ -1,40 +1,36 @@
 package com.tshirtslayer;
 
 import java.util.ArrayList;
-import java.util.Timer;
-import java.util.TimerTask;
-
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
-import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.Menu;
-import android.widget.RemoteViews;
 import android.widget.Toast;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.database.Cursor;
 import com.tshirtslayer.DbAdapter;
-
+import java.net.UnknownHostException;
 
 
 public class TshirtslayerActivity extends Activity {
-
-
+	
 	private static final String TAG = "TshirtSlayer Application: ";
 	private String cUser = new String();
 	private String cPass = new String();
-	AsyncTask<Context, Integer, Integer>  _uploadMechanism;
+	AsyncTask<Context, Integer, Boolean>  _uploadMechanism;
+	
 
 	void showToast(CharSequence msg) {
 		Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
@@ -77,18 +73,23 @@ public class TshirtslayerActivity extends Activity {
 	 * keep an eye on the database and see if theres something in the queue to send
 	 * if there is, then send it
 	 */
-	protected class uploadMechanism extends AsyncTask<Context, Integer, Integer> {
+	protected class uploadMechanism extends AsyncTask<Context, Integer, Boolean> {
 
 	    private volatile boolean keep_running = true;		
 		private DbAdapter dbHelper;
-
+		private xmlrpcupload uploadInterface;
+		private Context context;
+		private String errorString;
+		private Integer retryStatus;
+		
 	    @Override
 	    protected void onCancelled() {
 	        keep_running = false;
 	        Log.i(TAG, "UploadThread: Got cancel!");
 	    }
-		protected Integer doInBackground(Context... context) {
-			dbHelper = new DbAdapter(context[0]);
+		protected Boolean doInBackground(Context... thisContext) {
+			context = thisContext[0];
+			dbHelper = new DbAdapter(thisContext[0]);
 			Cursor uploadItem;
 			
 			while (keep_running == true) {
@@ -105,7 +106,14 @@ public class TshirtslayerActivity extends Activity {
 							if (setUpIsComplete() == true) {
 								// begin upload
 								String title = uploadItem.getString(uploadItem.getColumnIndex("item_title"));
-								triggerNotification(title);
+								//triggerNotification(title);
+								uploadInterface = new xmlrpcupload();
+								if( uploadInterface.ping() == false ) {
+									errorString = uploadInterface.getErrorString();									
+									publishProgress(-1);
+							    	keep_running = false;								    	
+								}
+								
 							}
 						}
 						dbHelper.close();
@@ -115,14 +123,39 @@ public class TshirtslayerActivity extends Activity {
 					Log.i(TAG,"UploadMechanism: Waiting was interrupted");
 				}
 			}
-			return 0;
+			return false;
 	    }
 
-		protected void onPostExecute(Integer result) {
-        	super.onPostExecute(result);
+		protected void onPostExecute(Boolean result) {
+			Log.i(TAG, "POSTEXECUTE! NRARGGH!");
+			super.onPostExecute(result);
         }
 		
+		@Override
+		protected void onProgressUpdate(Integer... result) {
+			AlertDialog alertDialog;
+			Integer retry;
+			retryStatus =0;
+			//showToast(errorString);
+			
+			alertDialog = new AlertDialog.Builder(context).create();
+			alertDialog.setTitle("Error Connecting");
+			alertDialog.setMessage(errorString);
+			alertDialog.setButton("Retry", new DialogInterface.OnClickListener() {
+				public void onClick(DialogInterface dialog, int which) {
+					_uploadMechanism = new uploadMechanism().execute(context);
+				}
+			});
+			alertDialog.setButton2("Cancel",
+					new DialogInterface.OnClickListener() {
+						public void onClick(DialogInterface dialog, int which) {
+							// nothing!
+						}
+					});
 
+			alertDialog.show();
+			super.onProgressUpdate(retryStatus);
+		}
 
 	}
 
@@ -139,13 +172,7 @@ public class TshirtslayerActivity extends Activity {
 
 		switch (item.getItemId()) {
 		case R.id.app_quit:
-			// @todo: send correct message to thread to shut down
 			_uploadMechanism.cancel(true);
-			try {
-				Thread.sleep(1000);
-			} catch (InterruptedException e) {
-				Log.i(TAG, "OUCH!!!! Thread shutdown in appquit");
-			}
 			setResult(RESULT_OK);
 			finish();
 			break;
@@ -209,7 +236,7 @@ public class TshirtslayerActivity extends Activity {
 
     	Notification notification = new Notification(icon, tickerText, when);
     	Context context = getApplicationContext();
-    	CharSequence contentTitle = "TShirtSlayer Uploading";
+    	CharSequence contentTitle = "TShirtSlayer";
     	CharSequence contentText = message;
     	Intent notificationIntent = new Intent(this, TshirtslayerActivity.class);
     	PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
