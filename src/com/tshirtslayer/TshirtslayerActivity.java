@@ -115,8 +115,9 @@ public class TshirtslayerActivity extends Activity {
 								} else {
 									if ( uploadInterface.uploadItem(uploadItem) == true ) {
 										// remove the item from the queue
-										dbHelper.deleteItem(uploadItem.getColumnIndex(DbAdapter.KEY_ROWID));
-										Log.d("Uploader","Removed from queue!");
+										// @todo do i need this parseInt/getString? could be a better way?
+										dbHelper.deleteItem( Integer.parseInt(uploadItem.getString(uploadItem.getColumnIndex(DbAdapter.KEY_ROWID)) ));
+										Log.d("Uploader","Removed from queue! "+uploadItem.getString(uploadItem.getColumnIndex(DbAdapter.KEY_ROWID)));
 									} else {
 										errorString = uploadInterface.getErrorString();									
 										publishProgress(-1);

@@ -79,15 +79,10 @@ public class xmlrpcupload {
 		
 		try {
 			client
-					.call("tshirtslayer.addItem", logInSessID, Integer
-							.toString(uploadItem
-									.getColumnIndex(DbAdapter.KEY_TYPE)),
-							Integer.toString(uploadItem
-									.getColumnIndex(DbAdapter.KEY_TRADE_TYPE)),
-							Integer.toString(uploadItem
-									.getColumnIndex(DbAdapter.KEY_YEAR)),
-							Integer.toString(uploadItem
-									.getColumnIndex(DbAdapter.KEY_TITLE)),
+					.call("tshirtslayer.addItem", logInSessID, uploadItem.getString(uploadItem.getColumnIndex(DbAdapter.KEY_TYPE)),
+							uploadItem.getString(uploadItem.getColumnIndex(DbAdapter.KEY_TRADE_TYPE)),
+							uploadItem.getString(uploadItem.getColumnIndex(DbAdapter.KEY_YEAR)),
+							uploadItem.getString(uploadItem.getColumnIndex(DbAdapter.KEY_TITLE)),
 							"someimages");
 		} catch (XMLRPCException e) {
 			errorString = e.getMessage();
