@@ -109,7 +109,14 @@ public class item extends Activity {
 				});
 
 		Button confirmButton = (Button) findViewById(R.id.addButton);
-
+		// check that no more than 2 items are in the queue for this entry
+		ArrayList<String> contentUris = getIntent().getStringArrayListExtra("tshirtslayer_contentUris");
+		
+		if(contentUris.size() > 2) {
+			showToast("You can add at most 2 images at a time (Front and Back image)");
+			finish();
+		}
+		
 		confirmButton.setOnClickListener(new View.OnClickListener() {
 			public void onClick(View view) {
 				EditText mTitle = (EditText) findViewById(R.id.item_title);

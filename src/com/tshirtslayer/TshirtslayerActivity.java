@@ -95,8 +95,7 @@ public class TshirtslayerActivity extends Activity {
 			while (keep_running == true) {
 				try {
 					// loop and see if theres anything in the DB to send
-					// @todo: move open/close out of the way until app closes
-					Thread.sleep(500);
+					Thread.sleep(3000);
 					if ( keep_running == true ) {
 						dbHelper.open();
 						uploadItem = dbHelper.fetchItem(0);
@@ -105,15 +104,25 @@ public class TshirtslayerActivity extends Activity {
 							// only do stuff if the setup is complete
 							if (setUpIsComplete() == true) {
 								// begin upload
+ 
 								String title = uploadItem.getString(uploadItem.getColumnIndex("item_title"));
 								//triggerNotification(title);
-								uploadInterface = new xmlrpcupload();
-								if( uploadInterface.ping() == false ) {
+								uploadInterface = new xmlrpcupload(thisContext[0]);
+								if( uploadInterface.connectAndLogIn() == false ) {
 									errorString = uploadInterface.getErrorString();									
 									publishProgress(-1);
 							    	keep_running = false;								    	
+								} else {
+									if ( uploadInterface.uploadItem(uploadItem) == true ) {
+										// remove the item from the queue
+										dbHelper.deleteItem(uploadItem.getColumnIndex(DbAdapter.KEY_ROWID));
+										Log.d("Uploader","Removed from queue!");
+									} else {
+										errorString = uploadInterface.getErrorString();									
+										publishProgress(-1);
+								    	keep_running = false;								    											
+									}										
 								}
-								
 							}
 						}
 						dbHelper.close();
@@ -134,7 +143,6 @@ public class TshirtslayerActivity extends Activity {
 		@Override
 		protected void onProgressUpdate(Integer... result) {
 			AlertDialog alertDialog;
-			Integer retry;
 			retryStatus =0;
 			//showToast(errorString);
 			
@@ -206,7 +214,7 @@ public class TshirtslayerActivity extends Activity {
 	// check settings are complete, if not, show message and launch
 	private void checkSetup(Context context) {
 		if ( setUpIsComplete() == false ) {
-			CharSequence text = "Please enter your username and password";
+			CharSequence text = "Please configure your username and password (In the application settings)";
 			int duration = Toast.LENGTH_SHORT;
 			Toast toast = Toast.makeText(context, text, duration);
 			Intent i_settings = new Intent(context, settings.class);
