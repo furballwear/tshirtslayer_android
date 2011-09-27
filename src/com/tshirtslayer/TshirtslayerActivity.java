@@ -21,7 +21,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.database.Cursor;
 import com.tshirtslayer.DbAdapter;
-import java.net.UnknownHostException;
+
 
 
 public class TshirtslayerActivity extends Activity {
@@ -91,11 +91,11 @@ public class TshirtslayerActivity extends Activity {
 			context = thisContext[0];
 			dbHelper = new DbAdapter(thisContext[0]);
 			Cursor uploadItem;
-			
+			Log.d("tshirtslayer","Launched and exec thread for updateMechanism!!");
 			while (keep_running == true) {
 				try {
 					// loop and see if theres anything in the DB to send
-					Thread.sleep(3000);
+					Thread.sleep(000);
 					if ( keep_running == true ) {
 						dbHelper.open();
 						uploadItem = dbHelper.fetchItem(0);
@@ -103,9 +103,7 @@ public class TshirtslayerActivity extends Activity {
 						if (uploadItem.getCount() > 0) {
 							// only do stuff if the setup is complete
 							if (setUpIsComplete() == true) {
-								// begin upload
- 
-								String title = uploadItem.getString(uploadItem.getColumnIndex("item_title"));
+								// begin upload 
 								//triggerNotification(title);
 								uploadInterface = new xmlrpcupload(thisContext[0]);
 								if( uploadInterface.connectAndLogIn() == false ) {
@@ -137,7 +135,7 @@ public class TshirtslayerActivity extends Activity {
 	    }
 
 		protected void onPostExecute(Boolean result) {
-			Log.i(TAG, "POSTEXECUTE! NRARGGH!");
+			Log.i(TAG, "UploadThread mechanism shutting down");
 			super.onPostExecute(result);
         }
 		
@@ -228,7 +226,8 @@ public class TshirtslayerActivity extends Activity {
 	private void upload(ArrayList contentUris, Context context) {
 		Intent i_item = new Intent(TshirtslayerActivity.this, item.class);
 		i_item.putStringArrayListExtra("tshirtslayer_contentUris", contentUris);
-		startActivity(i_item);		
+		startActivity(i_item);
+		
 	}
 	
 

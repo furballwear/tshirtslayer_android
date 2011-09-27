@@ -68,9 +68,15 @@ public class DbAdapter {
 	public boolean deleteItem(long rowId) {
 		return database.delete(DATABASE_TABLE, KEY_ROWID + "=" + rowId, null) > 0;
 	}
+	/**
+	 * Deletes item
+	 */
+	public boolean deleteImageItem(long rowId) {
+		return database.delete(DATABASE_ATTACHMENT_TABLE, "_id" + "=" + rowId, null) > 0;
+	}
 
 	/**
-	 * Return a Cursor over the list of all todo in the database
+	 * Return a Cursor over the list 
 	 * 
 	 * @return Cursor over all notes
 	 */
@@ -78,6 +84,22 @@ public class DbAdapter {
 		return database.query(DATABASE_TABLE, new String[] { KEY_ROWID,
 				KEY_TITLE, KEY_TYPE, KEY_YEAR  }, null, null, null,
 				null, null);
+	}
+
+	/**
+	 * Return a Cursor over the list to obtain list of images associated 
+	 * 
+	 * @return Cursor over all notes
+	 */
+	public Cursor fetchAllImageItems(String itemID) {
+		
+		Cursor mCursor =  database.query(DATABASE_ATTACHMENT_TABLE, new String[] { "item_id",
+				"attachment", "_id" }, "item_id = "+itemID, null, null, null, null, null);
+
+		if (mCursor != null) {
+			mCursor.moveToFirst();
+		}
+		return mCursor;
 	}
 
 	/**
