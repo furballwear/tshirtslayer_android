@@ -1,6 +1,7 @@
 package com.tshirtslayer;
 
 import java.net.URI;
+import java.net.UnknownHostException;
 import java.util.HashMap;
 import org.xmlrpc.android.XMLRPCClient;
 import org.xmlrpc.android.XMLRPCException;
@@ -31,8 +32,8 @@ public class xmlrpcupload {
 	private String errorString;
 	private Context context;
 	private String logInSessID;
-	
-	public xmlrpcupload(Context thisContext)  {	
+
+	public xmlrpcupload(Context thisContext) {
 		context = thisContext;
 		uri = URI.create("http://tshirtslayer.com/services/xmlrpc");
 		try {
@@ -40,33 +41,28 @@ public class xmlrpcupload {
 		} catch (Exception e) {
 			errorString = e.getMessage();
 		}
-		
+
 	}
 
-	public static byte[] getBytesFromFile(InputStream is)
-	{
-		try
-		{
+	public static byte[] getBytesFromFile(InputStream is) {
+		try {
 			ByteArrayOutputStream buffer = new ByteArrayOutputStream();
 
 			int nRead;
 			byte[] data = new byte[16384];
 
-			while ((nRead = is.read(data, 0, data.length)) != -1)
-			{
+			while ((nRead = is.read(data, 0, data.length)) != -1) {
 				buffer.write(data, 0, nRead);
 			}
 
 			buffer.flush();
 
 			return buffer.toByteArray();
-		} catch (IOException e)
-		{
+		} catch (IOException e) {
 			Log.e("xmlrpcupload", e.toString());
 			return null;
 		}
 	}
-    	
 
 	public boolean logOut() {
 		Log.d("xmlrpcupload", "Logging out");
@@ -75,140 +71,152 @@ public class xmlrpcupload {
 			client.call("user.logout");
 		} catch (XMLRPCException e) {
 			errorString = e.getMessage();
-			return false;			
+			return false;
 		}
 		return true;
 	}
-	
 
 	/**
 	 * hit up the queue and grab the first one
+	 * 
 	 * @return
 	 */
-	public boolean uploadItem(Cursor uploadItem) {
-		Log.d("xmlrpcupload", "Uploading item" );
+	public boolean uploadItemToTshirtSlayer(Cursor uploadItem) {
+		Log.d("xmlrpcupload", "Uploading item");
 		DbAdapter dbHelper = new DbAdapter(context);
 		Cursor uploadImageCursor;
 		ContentResolver cr;
 		InputStream is;
 		Uri uri;
-		Integer uploadCount =0;
+		Integer uploadCount = 0;
 		String item_id;
 		byte[] data;
 		String encodedData;
 		data = null;
-		
+
 		// find out the image relating to this item
 		dbHelper.open();
 		item_id = uploadItem.getString(uploadItem.getColumnIndex(DbAdapter.KEY_ROWID));
-		Log.d("xmlrpcupload","Looking for attachments relating to item "+item_id);
-		uploadImageCursor = dbHelper.fetchAllImageItems(item_id);		
+		Log.d("xmlrpcupload tshirtslayer", "Looking for attachments relating to item " + item_id);
+		uploadImageCursor = dbHelper.fetchAllImageItems(item_id);
 		if (uploadImageCursor.moveToFirst()) {
-			Log.d("xmlrpcupload","Found images, iterating");
+			Log.d("xmlrpcupload", "Found images, iterating");
 			do {
 				try {
-					// @todo: this API is not as efficient as it can be, first we add images
-					//        and then add the tshirt, this is to try and keep memory usage
-					//        as low as possible, storing multiple images in memory hurts.
-					//        and i get tonnes of exceptions for storing multiple images in ArrayList/lit
+					// @todo: this API is not as efficient as it can be, first
+					// we add images
+					// and then add the tshirt, this is to try and keep memory
+					// usage
+					// as low as possible, storing multiple images in memory
+					// hurts.
+					// and i get tonnes of exceptions for storing multiple
+					// images in ArrayList/lit
 					//
-					// @todo: Move away from xmlrpclib and use raw sockets and just pipe the data in
+					// @todo: Move away from xmlrpclib and use raw sockets and
+					// just pipe the data in
 					// @todo: report how much has been uploaded % complete
-					
-					Log.d("xmrpcupload","-----> try");
-					Log.d("xmlrpcupload", uploadImageCursor.getString(1));
-					
-					uri = Uri.parse(uploadImageCursor.getString(1));
-					cr = context.getContentResolver();					
-	                is = cr.openInputStream(uri);
-	                Log.d("Found item",uploadImageCursor.getString(1));
-	                // Get binary bytes for encode
-	                data = getBytesFromFile(is);
-	                Log.d("xmlrpcupload","Read "+Integer.toString(data.length)+" bytes");
-	                System.gc();
-	                // filename is generated automatically on receiving end
-        			Log.d("xmlrpcupload","Making the tshirtslayer.addImage call for "+uploadImageCursor.getString(1));
-        			encodedData = new String(Base64.encodeBase64(data));
-        			data = null;
-        			Log.d("xmlrpcupload","Encoded data length is"+Integer.toString(encodedData.length()));
-	        		try {
-	        			client.call("tshirtslayer.addImage", logInSessID, encodedData );
 
-	        		} catch (XMLRPCException e) {
-	        			errorString = "Problem adding image "+e.getMessage();
-	        			dbHelper.close();
-	        			if (uploadImageCursor != null && !uploadImageCursor.isClosed()) {
-	        				uploadImageCursor.close();
-	        			}
-	        			return false;
-	        		} 	        	
-	        		encodedData = null;
-	        		System.gc();
-	        		// assume the image was added
-	        		// @todo assuming makes an ass out of me and you
-        		
-	        		dbHelper.deleteImageItem(Integer.parseInt(uploadImageCursor.getString(0)));
-	                
+					Log.d("xmlrpcupload tshirtslayer", uploadImageCursor.getString(1));
+
+					uri = Uri.parse(uploadImageCursor.getString(1));
+					cr = context.getContentResolver();
+					is = cr.openInputStream(uri);
+					Log.d("Found item", uploadImageCursor.getString(1));
+					// Get binary bytes for encode
+					data = getBytesFromFile(is);
+					Log.d("xmlrpcupload tshirtslayer", "Read "
+							+ Integer.toString(data.length) + " bytes");
+					// filename is generated automatically on receiving end
+					Log.d("xmlrpcupload tshirtslayer",
+							"Making the tshirtslayer.addImage call for "
+									+ uploadImageCursor.getString(1));
+					encodedData = new String(Base64.encodeBase64(data));
+					Log.d("xmlrpcupload tshirtslauyer", "Encoded data length is "
+							+ Integer.toString(encodedData.length()));
+					try {
+						client.call("tshirtslayer.addImage", logInSessID,
+								encodedData);
+
+					} catch (XMLRPCException e) {
+						errorString = "Problem adding image " + e.getMessage();
+						Log.d("xmlrpcupload tshirtslayer", errorString);
+						dbHelper.close();
+						if (uploadImageCursor != null
+								&& !uploadImageCursor.isClosed()) {
+							uploadImageCursor.close();
+						}
+						return false;
+					}
+					// assume the image was added
+					// @todo assuming makes an ass out of me and you
+					Log.d("xmlrpcupload tshirtslayer","Removing image from list of images to send");
+					
+					dbHelper.deleteImageItem(Integer.parseInt(uploadImageCursor.getString(0)));
+
 				} catch (FileNotFoundException e) {
 					errorString = "An image you tried to send no longer exists, skipping";
 				}
-				// safety catch, shouldnt happen but we should have a hardlimit anyway
+				// safety catch, shouldnt happen but we should have a hardlimit
+				// anyway
 				uploadCount++;
-				
+
 			} while (uploadImageCursor.moveToNext() && uploadCount < 5);
 		} else {
-			Log.d("xmlrpcupload","ERROR! No attachments found");	
+			Log.d("xmlrpcupload", "ERROR! No attachments found");
 		}
-		if (uploadImageCursor != null && !uploadImageCursor.isClosed()) {
-			uploadImageCursor.close();
-		}
-		dbHelper.close();
-		
+
 		try {
 			// filename is generated automatically on receiving end
-			Log.d("xmlrpcupload","Making the tshirtslayer.additem call");
-		    client
-					.call("tshirtslayer.addItem", logInSessID, 
-							uploadItem.getString(uploadItem.getColumnIndex(DbAdapter.KEY_TYPE)),
-							uploadItem.getString(uploadItem.getColumnIndex(DbAdapter.KEY_TRADE_TYPE)),
-							uploadItem.getString(uploadItem.getColumnIndex(DbAdapter.KEY_YEAR)),
-							uploadItem.getString(uploadItem.getColumnIndex(DbAdapter.KEY_TITLE)));
-		} catch (XMLRPCException e) {
+			Log.d("xmlrpcupload tshirtslayer", "Making the tshirtslayer.additem call");
+			client.call("tshirtslayer.addItem", logInSessID, 
+					uploadItem.getString(uploadItem.getColumnIndex(DbAdapter.KEY_TYPE)),
+					uploadItem.getString(uploadItem.getColumnIndex(DbAdapter.KEY_TRADE_TYPE)),
+					uploadItem.getString(uploadItem.getColumnIndex(DbAdapter.KEY_YEAR)), 
+					uploadItem.getString(uploadItem.getColumnIndex(DbAdapter.KEY_TITLE)),
+					uploadItem.getString(uploadItem.getColumnIndex(DbAdapter.KEY_BAND))
+							);
+		} catch (Exception e) {
 			errorString = e.getMessage();
-			return false;
-		}		
+			//return false;
+		}
+		Log.d("xmlrpc tshirtslayer","Closing dbhandlers and returning");
+		
+		uploadImageCursor.close();
+		dbHelper.close();
+		
 		return true;
 	}
-	
-	public boolean connectAndLogIn() {		
-		Log.d("xmlrpcupload","Logging into tshirtslayer.com");
+
+	public boolean connectAndLogIn() {
+		Log.d("xmlrpcupload", "Logging into tshirtslayer.com");
 		try {
 
-		    HashMap<?, ?> siteConn =(HashMap<?, ?>)  client.call("system.connect");
-		    // Getting initial session id
-		    String initSessID=(String)siteConn.get("sessid");
-		    Log.d("Base SessionID", initSessID);
+			HashMap<?, ?> siteConn = (HashMap<?, ?>) client
+					.call("system.connect");
+			// Getting initial session id
+			String initSessID = (String) siteConn.get("sessid");
+			Log.d("Base SessionID", initSessID);
 
-			SharedPreferences app_preferences = PreferenceManager.getDefaultSharedPreferences(context);
-			
-		    //Login to the site using session id        
-		    HashMap<?, ?> logInConn =(HashMap<?, ?>)  client.call("tshirtslayer.login",
-		    														initSessID,
-		    														app_preferences.getString("user", ""),
-		    														app_preferences.getString("pass", "")
-		    														);
+			SharedPreferences app_preferences = PreferenceManager
+					.getDefaultSharedPreferences(context);
 
-		    //Getting Login sessid
-		    logInSessID=(String)logInConn.get("sessid");
-		    Log.d("User SessionID", logInSessID);
-		    
-		} catch (XMLRPCException e) {
+			// Login to the site using session id
+			HashMap<?, ?> logInConn = (HashMap<?, ?>) client.call(
+					"tshirtslayer.login", initSessID, app_preferences
+							.getString("user", ""), app_preferences.getString(
+							"pass", ""));
+
+			// Getting Login sessid
+			logInSessID = (String) logInConn.get("sessid");
+			Log.d("User SessionID", logInSessID);
+
+		} catch (Exception e) {
 			errorString = e.getMessage();
 			return false;
-		}			
-		return true;				
+		}
+		return true;
 	}
-	
+
 	public String getErrorString() {
 		return errorString;
 	}

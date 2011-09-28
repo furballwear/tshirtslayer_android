@@ -13,7 +13,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
 	// Database creation sql statement
 	private static final String DATABASE_CREATE = "create table items (_id integer primary key autoincrement, "
-			+ "item_title text , item_type text , item_year text , item_trade_type text  );";
+			+ "item_title text , item_type text , item_year text , item_trade_type text, item_band text );";
 
 	private static final String DATABASE_CREATE_ATTACHMENT = "create table item_attachment (_id integer primary key autoincrement, "
 		+ "item_id int , attachment text );";

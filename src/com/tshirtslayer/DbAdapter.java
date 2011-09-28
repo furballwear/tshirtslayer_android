@@ -18,7 +18,8 @@ public class DbAdapter {
 	public static final String KEY_TYPE = "item_type";
 	public static final String KEY_TRADE_TYPE = "item_trade_type";	
 	public static final String KEY_YEAR = "item_year";
-
+	public static final String KEY_BAND = "item_band";
+	
 	// database for attachments	
 	public static final String KEY_ATTACHMENT_ITEM_ID = "item_id";	
 	public static final String KEY_ATTACHMENT_NAME =  "attachment";
@@ -48,8 +49,8 @@ public class DbAdapter {
 	 * Create a new item If the item is successfully created return the new
 	 * rowId for that note, otherwise return a -1 to indicate failure.
 	 */
-	public long createItem(String title, String type, String year, String trade_type, ArrayList images) {
-		ContentValues initialValues = createContentValues(title, type, year, trade_type);
+	public long createItem(String title, String type, String year, String trade_type, String band, ArrayList images) {
+		ContentValues initialValues = createContentValues(title, type, year, trade_type, band);
 		
 		long itemId = database.insert(DATABASE_TABLE, null, initialValues);
 		
@@ -71,7 +72,7 @@ public class DbAdapter {
 	/**
 	 * Deletes item
 	 */
-	public boolean deleteImageItem(long rowId) {
+	public boolean deleteImageItem(long rowId) {		
 		return database.delete(DATABASE_ATTACHMENT_TABLE, "_id" + "=" + rowId, null) > 0;
 	}
 
@@ -82,7 +83,7 @@ public class DbAdapter {
 	 */
 	public Cursor fetchAllItems() {
 		return database.query(DATABASE_TABLE, new String[] { KEY_ROWID,
-				KEY_TITLE, KEY_TYPE, KEY_YEAR  }, null, null, null,
+				KEY_TITLE, KEY_TYPE, KEY_YEAR, KEY_BAND  }, null, null, null,
 				null, null);
 	}
 
@@ -111,7 +112,7 @@ public class DbAdapter {
 				KEY_ROWID + "=" + rowId, null, null, null, null, null);
 */
 		Cursor mCursor = database.query(true, DATABASE_TABLE, new String[] {
-				KEY_ROWID, KEY_TITLE, KEY_TYPE, KEY_YEAR, KEY_TRADE_TYPE },
+				KEY_ROWID, KEY_TITLE, KEY_TYPE, KEY_YEAR, KEY_TRADE_TYPE, KEY_BAND },
 				null, null, null, null, null, null);
 
 		if (mCursor != null) {
@@ -129,13 +130,13 @@ public class DbAdapter {
 	
 
 	private ContentValues createContentValues(String title, String type,
-			String year, String trade_type) {
+			String year, String trade_type, String band) {
 		ContentValues values = new ContentValues();
 		values.put(KEY_TITLE, title);
 		values.put(KEY_TYPE, type);
 		values.put(KEY_YEAR, year);
 		values.put(KEY_TRADE_TYPE, trade_type);	
-//		values.put(KEY_IMAGES, images);
+		values.put(KEY_BAND, band);
 		return values;
 	}
 

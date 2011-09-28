@@ -28,17 +28,30 @@ public class item extends Activity {
 	private String sTradeType;
 	private String sYear;
 	private String sTitle;
+	private String sBand;
 	private DbAdapter dbHelper;
 	
 	void showToast(CharSequence msg) {
 		Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
 	}
-
+	
+	@Override
+	public void onStart() {
+		super.onStart();
+	  dbHelper = new DbAdapter(this);
+	  dbHelper.open();
+	}
+	
+	@Override
+	public void onDestroy() {
+		super.onDestroy();
+		dbHelper.close();
+	}
+	
 	/** Called when the activity is first created. */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		dbHelper = new DbAdapter(this);
 
 		setContentView(R.layout.item);
 
@@ -120,7 +133,8 @@ public class item extends Activity {
 		confirmButton.setOnClickListener(new View.OnClickListener() {
 			public void onClick(View view) {
 				EditText mTitle = (EditText) findViewById(R.id.item_title);
-
+				EditText mBand = (EditText) findViewById(R.id.item_band);
+				
 				ArrayList<String> contentUris = getIntent()
 						.getStringArrayListExtra("tshirtslayer_contentUris");
 				// check all the fields are entered and ready
@@ -128,12 +142,11 @@ public class item extends Activity {
 						&& sTradeType.length() > 0
 						&& mTitle.getText().length() > 0) {
 					// store this in the queue DB
-					dbHelper.open();
 					sTitle = mTitle.getText().toString();
-					long id = dbHelper.createItem(sTitle, sType, sYear, sTradeType, contentUris);
-					dbHelper.close();
-
-					setResult(RESULT_OK);
+					sBand = mBand.getText().toString();
+					long id = dbHelper.createItem(sTitle, sType, sYear, sTradeType, sBand, contentUris);
+					Intent intent = new Intent();
+					setResult(RESULT_OK, intent);
 					finish();
 
 				} else {
