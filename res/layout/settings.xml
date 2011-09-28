@@ -2,7 +2,10 @@
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
 	android:orientation="vertical" android:layout_width="fill_parent"
-	android:layout_height="fill_parent">
+	android:layout_height="fill_parent" android:weightSum="1">
+    <TextView android:layout_weight="0.08" 
+    android:text="Your Existing tshirtslayer.com account details" android:id="@+id/textView1" 
+    android:layout_width="wrap_content" android:layout_height="wrap_content"></TextView>
 	
 	<LinearLayout android:orientation="horizontal"
 		android:layout_width="fill_parent"
@@ -10,7 +13,7 @@
 
 		<TextView android:layout_width="wrap_content"
 			android:layout_height="wrap_content" 
-			android:text="@string/user" />
+			android:text="@string/username" />
 		<EditText android:id="@+id/user" 
 		  android:layout_width="wrap_content"
 			android:layout_height="wrap_content" 

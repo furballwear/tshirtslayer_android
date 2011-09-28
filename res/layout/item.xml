@@ -8,13 +8,14 @@
     <TextView android:id="@+id/itemTitle" android:textAppearance="?android:attr/textAppearanceLarge" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="TshirtSlayer Item Description"></TextView>
     <Spinner android:layout_width="match_parent" android:layout_height="wrap_content" android:id="@+id/item_type" android:prompt="@string/item_prompt"></Spinner>
 	<Spinner android:layout_width="match_parent" android:layout_height="wrap_content" android:id="@+id/item_trade_type" android:prompt="@string/item_trade_prompt"></Spinner>
-
-    <EditText android:id="@+id/editText1" android:layout_width="match_parent" android:layout_height="wrap_content">
+	<Spinner android:layout_width="match_parent" android:layout_height="wrap_content" android:id="@+id/item_year" android:prompt="@string/item_year_prompt"></Spinner>    
+    <EditText android:layout_width="match_parent" android:layout_height="wrap_content" android:id="@+id/item_title" android:hint="@string/item_title_default">
+        <requestFocus></requestFocus>
+    </EditText>
+    <EditText android:layout_width="match_parent" android:layout_height="wrap_content" android:id="@+id/item_band" android:hint="@string/item_band_default">
         <requestFocus></requestFocus>
     </EditText>
 
-    <Spinner android:layout_width="match_parent" android:layout_height="wrap_content" android:id="@+id/spinner2" ></Spinner>
-    <EditText android:id="@+id/editText2" android:layout_width="match_parent" android:layout_height="wrap_content" android:inputType="textMultiLine" android:layout_weight="0.52"></EditText>
     <Button android:id="@+id/addButton" android:text="Add to TShirtSlayer!" android:layout_height="wrap_content" android:layout_width="match_parent"></Button>
     
 </LinearLayout>

@@ -11,6 +11,7 @@ public final class R {
     public static final class array {
         public static final int item_trade_types=0x7f050001;
         public static final int item_types=0x7f050000;
+        public static final int item_year_list=0x7f050002;
     }
     public static final class attr {
     }
@@ -21,39 +22,50 @@ public final class R {
     public static final class id {
         public static final int LinearLayout01=0x7f070007;
         public static final int addButton=0x7f070006;
-        public static final int app_quit=0x7f07000f;
-        public static final int app_settings=0x7f07000e;
-        public static final int confirm=0x7f07000d;
-        public static final int editText1=0x7f070003;
-        public static final int editText2=0x7f070005;
+        public static final int app_quit=0x7f070011;
+        public static final int app_settings=0x7f070010;
+        public static final int confirm=0x7f07000f;
         public static final int itemTitle=0x7f070000;
+        public static final int item_band=0x7f070005;
+        public static final int item_title=0x7f070004;
         public static final int item_trade_type=0x7f070002;
         public static final int item_type=0x7f070001;
+        public static final int item_year=0x7f070003;
         public static final int linearLayout1=0x7f070008;
         public static final int logo=0x7f070009;
         public static final int mainStatus=0x7f07000a;
-        public static final int pass=0x7f07000c;
-        public static final int spinner2=0x7f070004;
-        public static final int user=0x7f07000b;
+        public static final int pass=0x7f07000e;
+        public static final int progressBarUpload=0x7f07000b;
+        public static final int textView1=0x7f07000c;
+        public static final int user=0x7f07000d;
     }
     public static final class layout {
         public static final int item=0x7f030000;
         public static final int main=0x7f030001;
-        public static final int settings=0x7f030002;
+        public static final int progress_update=0x7f030002;
+        public static final int settings=0x7f030003;
     }
     public static final class menu {
         public static final int app_menu=0x7f060000;
     }
     public static final class string {
-        public static final int app_name=0x7f040001;
-        public static final int confirm=0x7f040002;
-        public static final int hello=0x7f040000;
-        public static final int itemTitle=0x7f040004;
-        public static final int item_prompt=0x7f040008;
-        public static final int item_trade_prompt=0x7f040009;
-        public static final int menu_app_quit=0x7f040007;
-        public static final int menu_app_settings_title=0x7f040006;
-        public static final int pass=0x7f040003;
-        public static final int user=0x7f040005;
+        public static final int app_name=0x7f040005;
+        public static final int confirm=0x7f040006;
+        public static final int hello=0x7f040004;
+        public static final int itemTitle=0x7f040008;
+        public static final int item_band_default=0x7f040010;
+        public static final int item_not_complete=0x7f04000e;
+        public static final int item_prompt=0x7f04000c;
+        public static final int item_title_default=0x7f04000f;
+        public static final int item_trade_prompt=0x7f04000d;
+        public static final int item_year_prompt=0x7f040011;
+        public static final int local_service_label=0x7f040002;
+        public static final int local_service_started=0x7f040000;
+        public static final int local_service_stopped=0x7f040001;
+        public static final int menu_app_quit=0x7f04000b;
+        public static final int menu_app_settings_title=0x7f04000a;
+        public static final int pass=0x7f040007;
+        public static final int tshirtslayerDeliveryService=0x7f040003;
+        public static final int username=0x7f040009;
     }
 }
