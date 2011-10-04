@@ -2,6 +2,8 @@ package com.tshirtslayer;
 
 import java.util.ArrayList;
 
+import org.xmlrpc.android.XMLRPCException;
+
 import android.app.AlertDialog;
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -130,7 +132,7 @@ public class deliveryService extends Service {
 			keep_running = true;
 			while(keep_running) {
 				if(isOnline()) {
-					deliverItem();
+					deliverItem();					
 				}
 				try {					
 					Thread.sleep(3000);
@@ -145,11 +147,23 @@ public class deliveryService extends Service {
 
 		@Override
 		protected void onProgressUpdate(Integer... result) {			
-			super.onProgressUpdate(-1);
+			super.onProgressUpdate(result[0]);
 			Log.d("tshirtslayer delivery thread",errorString);
-			keep_running = false;
+			
+			// critical problem here
+			if (result[0] == -1) {
+				keep_running = false;
+				showNotification("Could not upload!");
+			}
+			
+			if (result[0] == 0) {
+				// not so critical, probably a timeout, alert user and try again
+				showNotification("Retrying.. ");
+			}
+			
 			
 		}
+		
 
 		protected void onPostExecute(Long result) {
 			Log.d("tshirtslayer deliveryService","Completed another transmission!");
@@ -169,19 +183,13 @@ public class deliveryService extends Service {
 					showNotification(errorString);
 				} else {
 					showNotification("Sending...");
-
 					if (uploadInterface.uploadItemToTshirtSlayer(uploadItem) == true) {
-						// remove the item from the queue
-						// @todo do i need this parseInt/getString? could be a
-						// better way?
-						String itemID = uploadItem.getString(uploadItem.getColumnIndex(DbAdapter.KEY_ROWID));
-						
-						dbHelper.deleteItem(Integer.parseInt(itemID) );
-						Log.d("Uploader", "Removed from queue! " + itemID);
+						// remove the item from the queue 
+						Log.d("Uploader", "Removed from queue! ");
 						showNotification("Sending complete");
 					} else {
 						errorString = uploadInterface.getErrorString();
-						publishProgress(-1);						
+						publishProgress(0);						
 						// @todo do something
 					}
 				}

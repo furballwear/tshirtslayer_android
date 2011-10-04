@@ -1,5 +1,6 @@
 package com.tshirtslayer;
 
+import java.net.SocketException;
 import java.net.URI;
 import java.net.UnknownHostException;
 import java.util.HashMap;
@@ -93,11 +94,14 @@ public class xmlrpcupload {
 		byte[] data;
 		String encodedData;
 		data = null;
+		HashMap<?, ?> siteResponse;
 
 		// find out the image relating to this item
 		dbHelper.open();
-		item_id = uploadItem.getString(uploadItem.getColumnIndex(DbAdapter.KEY_ROWID));
-		Log.d("xmlrpcupload tshirtslayer", "Looking for attachments relating to item " + item_id);
+		item_id = uploadItem.getString(uploadItem
+				.getColumnIndex(DbAdapter.KEY_ROWID));
+		Log.d("xmlrpcupload tshirtslayer",
+				"Looking for attachments relating to item " + item_id);
 		uploadImageCursor = dbHelper.fetchAllImageItems(item_id);
 		if (uploadImageCursor.moveToFirst()) {
 			Log.d("xmlrpcupload", "Found images, iterating");
@@ -116,7 +120,8 @@ public class xmlrpcupload {
 					// just pipe the data in
 					// @todo: report how much has been uploaded % complete
 
-					Log.d("xmlrpcupload tshirtslayer", uploadImageCursor.getString(1));
+					Log.d("xmlrpcupload tshirtslayer", uploadImageCursor
+							.getString(1));
 
 					uri = Uri.parse(uploadImageCursor.getString(1));
 					cr = context.getContentResolver();
@@ -130,16 +135,20 @@ public class xmlrpcupload {
 					Log.d("xmlrpcupload tshirtslayer",
 							"Making the tshirtslayer.addImage call for "
 									+ uploadImageCursor.getString(1));
+					// really memory hungry here
 					encodedData = new String(Base64.encodeBase64(data));
-					Log.d("xmlrpcupload tshirtslauyer", "Encoded data length is "
-							+ Integer.toString(encodedData.length()));
+					Log.d("","");
+					Log.d("xmlrpcupload tshirtslayer",
+							"Encoded data length is "
+									+ Integer.toString(encodedData.length()));
 					try {
-						client.call("tshirtslayer.addImage", logInSessID,
-								encodedData);
-
+						siteResponse = (HashMap<?, ?>) client.call(
+								"tshirtslayer.addImage", logInSessID,
+								encodedData, item_id);
 					} catch (XMLRPCException e) {
 						errorString = "Problem adding image " + e.getMessage();
-						Log.d("xmlrpcupload tshirtslayer", errorString);
+						Log.d("XMLRPCException: xmlrpcupload tshirtslayer",
+								errorString);
 						dbHelper.close();
 						if (uploadImageCursor != null
 								&& !uploadImageCursor.isClosed()) {
@@ -147,11 +156,20 @@ public class xmlrpcupload {
 						}
 						return false;
 					}
-					// assume the image was added
-					// @todo assuming makes an ass out of me and you
-					Log.d("xmlrpcupload tshirtslayer","Removing image from list of images to send");
-					
-					dbHelper.deleteImageItem(Integer.parseInt(uploadImageCursor.getString(0)));
+
+					// check result
+					String result = (String) siteResponse.get("result");
+					if (result.contains("OK")) {
+						Log.d("xmlrpcupload tshirtslayer",
+								"Removing image from list of images to send");
+						dbHelper.deleteImageItem(Integer
+								.parseInt(uploadImageCursor.getString(0)));
+					} else {
+						Log.d("xmlrpcupload tshirtslayer", "Unexpected result in addImage"+result);
+						throw new RuntimeException(
+								"Transport layer was OK, but XMLRPC returned an error: "
+										+ result);
+					}
 
 				} catch (FileNotFoundException e) {
 					errorString = "An image you tried to send no longer exists, skipping";
@@ -160,30 +178,54 @@ public class xmlrpcupload {
 				// anyway
 				uploadCount++;
 
-			} while (uploadImageCursor.moveToNext() && uploadCount < 5);
+			} while (uploadImageCursor.moveToNext() && uploadCount < 10);
+
 		} else {
 			Log.d("xmlrpcupload", "ERROR! No attachments found");
+			
 		}
+		// now add the actual item, this will trigger the system to link the images
 
+		Log.d("xmlrpcupload tshirtslayer", "Making the tshirtslayer.additem call");
+		
 		try {
 			// filename is generated automatically on receiving end
-			Log.d("xmlrpcupload tshirtslayer", "Making the tshirtslayer.additem call");
-			client.call("tshirtslayer.addItem", logInSessID, 
-					uploadItem.getString(uploadItem.getColumnIndex(DbAdapter.KEY_TYPE)),
-					uploadItem.getString(uploadItem.getColumnIndex(DbAdapter.KEY_TRADE_TYPE)),
-					uploadItem.getString(uploadItem.getColumnIndex(DbAdapter.KEY_YEAR)), 
-					uploadItem.getString(uploadItem.getColumnIndex(DbAdapter.KEY_TITLE)),
-					uploadItem.getString(uploadItem.getColumnIndex(DbAdapter.KEY_BAND))
-							);
+			siteResponse = (HashMap<?, ?>) client.call(
+					"tshirtslayer.addItem", logInSessID, uploadItem
+							.getString(uploadItem
+									.getColumnIndex(DbAdapter.KEY_TYPE)),
+					uploadItem.getString(uploadItem
+							.getColumnIndex(DbAdapter.KEY_TRADE_TYPE)),
+					uploadItem.getString(uploadItem
+							.getColumnIndex(DbAdapter.KEY_YEAR)),
+					uploadItem.getString(uploadItem
+							.getColumnIndex(DbAdapter.KEY_TITLE)),
+					uploadItem.getString(uploadItem
+							.getColumnIndex(DbAdapter.KEY_BAND)), item_id);
+
 		} catch (Exception e) {
 			errorString = e.getMessage();
-			//return false;
+			Log.d("tshirtslayer add.Item",errorString);
+			uploadImageCursor.close();
+			dbHelper.close();
+			return false;
 		}
-		Log.d("xmlrpc tshirtslayer","Closing dbhandlers and returning");
-		
+		String result = (String) siteResponse.get("result");
+		Log.d("tshirtslayer xmlrpc","Got response "+result);
+
+		if (result.contains("OK")) {
+			Log.d("xmlrpcupload tshirtslayer", "Removing item from entry queue");
+				dbHelper.deleteItem(Integer.parseInt(item_id) );
+			} else {
+			throw new RuntimeException(
+					"Transport layer was OK, but XMLRPC returned an error: "
+							+ result);
+		}		
+		Log.d("xmlrpcupload tshirtslayer", "Closing dbhandlers and returning");
+
 		uploadImageCursor.close();
 		dbHelper.close();
-		
+
 		return true;
 	}
 

@@ -9,6 +9,7 @@ import java.net.URI;
 import java.net.URL;
 import java.util.Map;
 import java.util.Vector;
+import java.io.IOException;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -28,6 +29,8 @@ import org.apache.http.params.HttpParams;
 import org.apache.http.params.HttpProtocolParams;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserFactory;
+
+import android.util.Log;
 
 /**
  * XMLRPCClient allows to call remote XMLRPC method.
@@ -356,10 +359,12 @@ public class XMLRPCClient extends XMLRPCCommon {
 			}
 		} catch (XMLRPCException e) {
 			// catch & propagate XMLRPCException/XMLRPCFault
+			Log.d("XMLRPCClient.java","throwing a normal XMLRPC Exception");
 			throw e;
 		} catch (Exception e) {
+			Log.d("XMLRPCClient.java","Throwing a wobbly in Exception()");
 			e.printStackTrace();
-			// wrap any other Exception(s) around XMLRPCException
+			// wrap any other Exception(s) around XMLRPCException			
 			throw new XMLRPCException(e);
 		}
 	}

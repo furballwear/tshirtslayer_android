@@ -19,6 +19,7 @@ import android.widget.AdapterView.OnItemSelectedListener;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.preference.PreferenceManager;
+import android.widget.Toast;
 import com.tshirtslayer.DbAdapter;
 
 public class item extends Activity {
@@ -127,6 +128,8 @@ public class item extends Activity {
 		
 		if(contentUris.size() > 2) {
 			showToast("You can add at most 2 images at a time (Front and Back image)");
+			Intent intent = new Intent();
+			setResult(RESULT_OK, intent);
 			finish();
 		}
 		
