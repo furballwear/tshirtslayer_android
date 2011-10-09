@@ -137,7 +137,7 @@ public class xmlrpcupload {
 									+ uploadImageCursor.getString(1));
 					// really memory hungry here
 					encodedData = new String(Base64.encodeBase64(data));
-					Log.d("","");
+					data = null;
 					Log.d("xmlrpcupload tshirtslayer",
 							"Encoded data length is "
 									+ Integer.toString(encodedData.length()));
@@ -145,6 +145,7 @@ public class xmlrpcupload {
 						siteResponse = (HashMap<?, ?>) client.call(
 								"tshirtslayer.addImage", logInSessID,
 								encodedData, item_id);
+						encodedData = null;
 					} catch (XMLRPCException e) {
 						errorString = "Problem adding image " + e.getMessage();
 						Log.d("XMLRPCException: xmlrpcupload tshirtslayer",
@@ -260,6 +261,6 @@ public class xmlrpcupload {
 	}
 
 	public String getErrorString() {
-		return errorString;
+		return errorString.replace("XMLRPC Fault: ", "");
 	}
 }

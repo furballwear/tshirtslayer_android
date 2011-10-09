@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
@@ -19,7 +20,8 @@ public class settings extends Activity {
 	private EditText mUser;
 	private EditText mPass;
 	private Context mContext;
-
+	private CheckBox mCheckBox;
+	
 	/** Called when the activity is first created. */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -27,15 +29,21 @@ public class settings extends Activity {
 		setContentView(R.layout.settings);
 		mUser = (EditText) findViewById(R.id.user);
 		mPass = (EditText) findViewById(R.id.pass);
+		mCheckBox = (CheckBox) findViewById(R.id.alertCheckBox);
+		
 		mContext = this;
 
 		Button confirmButton = (Button) findViewById(R.id.confirm);
-
+		
 		SharedPreferences app_preferences = PreferenceManager
 				.getDefaultSharedPreferences(this);
 		mUser.setText(app_preferences.getString("user", ""));
 		mPass.setText(app_preferences.getString("pass", ""));
-
+		// get checkbox status
+		
+		Boolean vibrate = app_preferences.getBoolean("vibrate", false);
+		mCheckBox.setChecked(vibrate);
+		
 		confirmButton.setOnClickListener(new View.OnClickListener() {
 			public void onClick(View view) {
 
@@ -48,13 +56,12 @@ public class settings extends Activity {
 				SharedPreferences.Editor editor = app_preferences.edit();
 				editor.putString("user", mUser.getText().toString());
 				editor.putString("pass", mPass.getText().toString());
+				editor.putBoolean("vibrate", mCheckBox.isChecked());
 				editor.commit(); // Very important
 
 				setResult(RESULT_OK);
 				finish();
 			}
 		});
-
 	}
-
 }

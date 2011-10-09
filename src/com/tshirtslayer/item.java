@@ -30,7 +30,7 @@ public class item extends Activity {
 	private String sYear;
 	private String sTitle;
 	private String sBand;
-	private DbAdapter dbHelper;
+
 	
 	void showToast(CharSequence msg) {
 		Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
@@ -39,14 +39,11 @@ public class item extends Activity {
 	@Override
 	public void onStart() {
 		super.onStart();
-	  dbHelper = new DbAdapter(this);
-	  dbHelper.open();
 	}
 	
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
-		dbHelper.close();
 	}
 	
 	/** Called when the activity is first created. */
@@ -135,6 +132,8 @@ public class item extends Activity {
 		
 		confirmButton.setOnClickListener(new View.OnClickListener() {
 			public void onClick(View view) {
+				DbAdapter dbHelper;
+				
 				EditText mTitle = (EditText) findViewById(R.id.item_title);
 				EditText mBand = (EditText) findViewById(R.id.item_band);
 				
@@ -147,7 +146,10 @@ public class item extends Activity {
 					// store this in the queue DB
 					sTitle = mTitle.getText().toString();
 					sBand = mBand.getText().toString();
-					long id = dbHelper.createItem(sTitle, sType, sYear, sTradeType, sBand, contentUris);
+					dbHelper = new DbAdapter(getApplicationContext());
+					dbHelper.open();					
+					dbHelper.createItem(sTitle, sType, sYear, sTradeType, sBand, contentUris);
+					dbHelper.close();
 					Intent intent = new Intent();
 					setResult(RESULT_OK, intent);
 					finish();

@@ -12,6 +12,7 @@ import android.app.Service;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -23,6 +24,7 @@ import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -39,6 +41,7 @@ public class deliveryService extends Service {
 	static final int MSG_SET_INT_VALUE = 3;
     static final int MSG_SET_STRING_VALUE = 4;
     static final int MSG_UPLOAD_STATUS_BUMP = 5;
+    static final int MSG_RESTART_UPLOAD = 6;
     
 	/**
 	 * Command to the service to register a client, receiving callbacks from the
@@ -66,6 +69,7 @@ public class deliveryService extends Service {
 	 */
 	class IncomingHandler extends Handler {
 		public void handleMessage(Message msg) {
+			Log.d("tshirtslayer","Got message from UI "+Integer.toString(msg.what));
 			switch (msg.what) {
 			case MSG_REGISTER_CLIENT:
 				mClients.add(msg.replyTo);
@@ -75,16 +79,10 @@ public class deliveryService extends Service {
 				break;
 			case MSG_SET_VALUE:
 				mValue = msg.arg1;
-				for (int i = mClients.size() - 1; i >= 0; i--) {
-					try {
-						mClients.get(i).send(
-								Message.obtain(null, MSG_SET_VALUE, mValue, 0));
-					} catch (RemoteException e) {
-						// The client is dead. Remove it from the list;
-						// we are going through the list from back to front
-						// so this is safe to do inside the loop.
-						mClients.remove(i);
-					}
+				if (mValue == MSG_RESTART_UPLOAD) {
+					Log.d("tshirtslayer","Got notice from UI to restart sending again");
+					mNM.cancel(R.string.local_service_started);
+					_uploadMechanism = new uploadMechanism().execute(getApplicationContext());
 				}
 				break;
 			default:
@@ -120,7 +118,7 @@ public class deliveryService extends Service {
             	//Send data as a String
                 Bundle b = new Bundle();
                 b.putString("str1", msgText);
-                Message msg = Message.obtain(null, 1);
+                Message msg = Message.obtain(null, MSG_SET_STRING_VALUE);
                 msg.setData(b);
                 mClients.get(i).send(msg);
 
@@ -136,8 +134,6 @@ public class deliveryService extends Service {
 	public void onCreate() {
 		mNM = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 		Context context = this.getApplicationContext();
-
-
 		Log.d("deliveryService", "We are running!");
 		// Display a notification about us starting.
 		_uploadMechanism = new uploadMechanism().execute(context);
@@ -147,7 +143,6 @@ public class deliveryService extends Service {
 	public void onDestroy() {
 		// Cancel the persistent notification.
 		mNM.cancel(R.string.local_service_started);
-
 	}
 
 	private class uploadMechanism extends AsyncTask<Context, Integer, Boolean> {
@@ -181,32 +176,34 @@ public class deliveryService extends Service {
 				}
 				
 			}
+			Log.d("tshirtslayer","deliveryService XMLRPC thread hitting the end of usage");
+			this.cancel(false);
 			return true;
 		}
 
 		@Override
 		protected void onProgressUpdate(Integer... result) {			
 			super.onProgressUpdate(result[0]);
-			Log.d("tshirtslayer delivery thread",errorString);
+			Log.d("tshirtslayer delivery thread", errorString);
+			sendMessageToUI(errorString);
 			
 			// critical problem here
 			if (result[0] == -1) {
 				keep_running = false;
-				showNotification("Could not upload!");
+				showNotification(errorString);
 			}
 			
 			if (result[0] == 0) {
 				// not so critical, probably a timeout, alert user and try again
-				showNotification("Retrying.. ");
+				showNotification("Retrying.. "+errorString);
 			}
-			
 			
 		}
 		
-
 		protected void onPostExecute(Long result) {
-			Log.d("tshirtslayer deliveryService","Completed another transmission!");
+			Log.d("tshirtslayer deliveryService","Shutting down XMLRPC asyncthread");
 		}
+		
 		private void deliverItem() {
 			xmlrpcupload uploadInterface;
 			dbHelper = new DbAdapter(context);
@@ -216,9 +213,9 @@ public class deliveryService extends Service {
 				uploadInterface = new xmlrpcupload(context);
 				if (uploadInterface.connectAndLogIn() == false) {
 					errorString = uploadInterface.getErrorString();
-					// @todo do something
 					publishProgress(-1);
 					showNotification(errorString);
+					
 				} else {
 					showNotification("Sending...");
 					if (uploadInterface.uploadItemToTshirtSlayer(uploadItem) == true) {
@@ -227,11 +224,12 @@ public class deliveryService extends Service {
 						showNotification("Sending complete");
 					} else {
 						errorString = uploadInterface.getErrorString();
-						publishProgress(0);						
-						// @todo do something
+						// see if this was something todo with username/password
+						publishProgress(0);
 					}
+					sendTriggerToUI(MSG_UPLOAD_STATUS_BUMP);
 				}
-				sendTriggerToUI(MSG_UPLOAD_STATUS_BUMP);	
+					
 			}			
 			dbHelper.close();
 			uploadItem.close();
@@ -268,8 +266,16 @@ public class deliveryService extends Service {
 		// Set the info for the views that show in the notification panel.
 		notification.setLatestEventInfo(this,
 				getText(R.string.local_service_label), text, contentIntent);
-		notification.vibrate = new long[] { 0, 250, 100, 500, 100, 100, 100,
-				100 };
+		// should we vibrate?
+
+		SharedPreferences app_preferences = PreferenceManager
+				.getDefaultSharedPreferences(this);
+		Boolean vibrate = app_preferences.getBoolean("vibrate", false);
+		
+		if(vibrate == true) {
+			notification.vibrate = new long[] { 0, 250, 100, 500, 100, 100, 100,
+					100 };
+		}
 
 		// Send the notification.
 		// We use a string id because it is a unique number. We use it later to

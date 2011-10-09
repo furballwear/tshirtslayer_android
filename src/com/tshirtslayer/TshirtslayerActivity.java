@@ -48,6 +48,7 @@ public class TshirtslayerActivity extends Activity {
 	private static final int INTENT_PICTURE_GALLERY  = 2;
 	private static final int INTENT_PICTURE_CAMERA = 3;
 	private static final int INTENT_PICTURE_DESCRIBE = 4;
+	private static final int INTENT_SETTINGS = 5;
 	
 	ArrayList l = new ArrayList();
 	
@@ -68,7 +69,7 @@ public class TshirtslayerActivity extends Activity {
 	class IncomingHandler extends Handler {
 		@Override
 		public void handleMessage(Message msg) {
-			Log.d("tshirtslayer","Got message from service");
+			Log.d("tshirtslayer","Got message from service ID what: "+Integer.toString(msg.what));
 			switch (msg.what) {
 			case deliveryService.MSG_SET_INT_VALUE:
 				switch (msg.arg1) {
@@ -79,6 +80,7 @@ public class TshirtslayerActivity extends Activity {
 				break;
 			case deliveryService.MSG_SET_STRING_VALUE:
 				String str1 = msg.getData().getString("str1");
+				textStatus.setText(str1);
 				break;
 			default:
 				super.handleMessage(msg);
@@ -96,13 +98,14 @@ public class TshirtslayerActivity extends Activity {
                 mService.send(msg);
             } catch (RemoteException e) {
                 // In this case the service has crashed before we could even do anything with it
+            	Log.d("tshirtslayer","Service crashed" + e.toString());
             }
         }
 
         public void onServiceDisconnected(ComponentName className) {
             // This is called when the connection with the service has been unexpectedly disconnected - process crashed.
             mService = null;
-            textStatus.setText("Disconnected.");
+            Log.d("tshirtslayer","Service disconencted");
         }
     };
     
@@ -205,9 +208,9 @@ public class TshirtslayerActivity extends Activity {
 			break;
 		case R.id.app_settings:
 			// Launch Prefs activity
-			Intent i_settings = new Intent(TshirtslayerActivity.this,
+			Intent intent = new Intent(TshirtslayerActivity.this,
 					settings.class);
-			startActivity(i_settings);
+            startActivityForResult(intent, INTENT_SETTINGS);
 			break;
 
 		}
@@ -254,6 +257,10 @@ public class TshirtslayerActivity extends Activity {
 		super.onActivityResult(requestCode, resultCode, imageReturnedIntent);
 
 		switch (requestCode) {
+		case INTENT_SETTINGS:
+			// tell deliveryService to go back into trying again, maybe they changed the password or something
+			sendMessageToService(deliveryService.MSG_RESTART_UPLOAD);
+			break;
 		case INTENT_PICTURE_DESCRIBE:
 			if (resultCode == RESULT_OK) {
 				showToast("Your item is queued and will be sent.");
@@ -328,4 +335,52 @@ public class TshirtslayerActivity extends Activity {
 		uploadItem.close();		
 		return items.toString() + " items in the queue to upload";
 	}
+    
+
+    private void sendMessageToService(int intvaluetosend) {
+    	Log.d("tshirtslayer","Telling services layer message ID: "+Integer.toString(intvaluetosend) );
+        if (mIsBound) {
+            if (mService != null) {
+                try {
+                    Message msg = Message.obtain(null, deliveryService.MSG_SET_INT_VALUE, intvaluetosend, 0);
+                    msg.replyTo = mMessenger;
+                    mService.send(msg);
+                } catch (RemoteException e) {
+                	Log.d("tshirtslayer","tshirtslayerActivity sendMessageToService Exception "+ e.toString());
+                }
+            }
+        } else {
+        	Log.d("tshirtslayer","tshirtslayerActivity sendMessageToService mIsBound was false, no sending");
+        }
+    }
+
+    void doUnbindService() {
+        if (mIsBound) {
+        	Log.d("tshirtslayer","Unbinding from service");
+            // If we have received the service, and hence registered with it, then now is the time to unregister.
+            if (mService != null) {
+                try {
+                    Message msg = Message.obtain(null, deliveryService.MSG_UNREGISTER_CLIENT);
+                    msg.replyTo = mMessenger;
+                    mService.send(msg);
+                } catch (RemoteException e) {
+                    // There is nothing special we need to do if the service has crashed.
+                }
+            }
+            // Detach our existing connection.
+            unbindService(mConnection);
+            mIsBound = false;
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        try {
+            doUnbindService();
+        } catch (Throwable t) {
+            Log.e("MainActivity", "Failed to unbind from the service", t);
+        }
+    }
+    
 }
