@@ -49,6 +49,7 @@ public class TshirtslayerActivity extends Activity {
 	private static final int INTENT_PICTURE_CAMERA = 3;
 	private static final int INTENT_PICTURE_DESCRIBE = 4;
 	private static final int INTENT_SETTINGS = 5;
+	public static final int MAXIMUM_IMAGES_PER_POST = 5;
 	
 	ArrayList l = new ArrayList();
 	
@@ -329,7 +330,12 @@ public class TshirtslayerActivity extends Activity {
 	            break;
 
 	        case DialogInterface.BUTTON_POSITIVE:
-	            startActivityForResult(addImageIntent, addImageIntent_ID);	        	
+	        	if(l.size() >= TshirtslayerActivity.MAXIMUM_IMAGES_PER_POST ) {
+	        		showToast("Maximum number of images per post reached");
+	        		upload(l, getApplicationContext());
+	        	} else {
+	              startActivityForResult(addImageIntent, addImageIntent_ID);
+	        	}
 	            break;
 	        }
 	    }

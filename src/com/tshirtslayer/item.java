@@ -123,8 +123,8 @@ public class item extends Activity {
 		// check that no more than 2 items are in the queue for this entry
 		ArrayList<String> contentUris = getIntent().getStringArrayListExtra("tshirtslayer_contentUris");
 		
-		if(contentUris.size() > 2) {
-			showToast("You can add at most 2 images at a time (Front and Back image)");
+		if(contentUris.size() > TshirtslayerActivity.MAXIMUM_IMAGES_PER_POST ) {
+			showToast("You can add at most "+Integer.toString(TshirtslayerActivity.MAXIMUM_IMAGES_PER_POST) +" images at a time (Front and Back image and a few closeups)");
 			Intent intent = new Intent();
 			setResult(RESULT_OK, intent);
 			finish();
