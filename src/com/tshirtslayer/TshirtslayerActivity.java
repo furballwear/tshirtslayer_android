@@ -206,6 +206,18 @@ public class TshirtslayerActivity extends Activity {
 			setResult(RESULT_OK);
 			finish();
 			break;
+		case R.id.app_clear:
+	    	DbAdapter dbHelper;
+
+			dbHelper = new DbAdapter(this.getApplicationContext());
+			dbHelper.open();
+			dbHelper.deleteAllImageItems();
+			dbHelper.deleteAllItems();
+			dbHelper.close();
+
+			textStatus.setText(getStringNumberOfItemsInQueue());
+			showToast("Queue Emptied");
+			break;
 		case R.id.app_settings:
 			// Launch Prefs activity
 			Intent intent = new Intent(TshirtslayerActivity.this,

@@ -2,40 +2,57 @@
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
 	android:orientation="vertical" android:layout_width="fill_parent"
-	android:layout_height="fill_parent" android:weightSum="1">
+	android:layout_height="fill_parent" android:weightSum="1"
+	>
     <TextView android:layout_weight="0.08" 
     android:text="Your Existing tshirtslayer.com account details" android:id="@+id/textView1" 
-    android:layout_width="wrap_content" android:layout_height="wrap_content"></TextView>
+    android:layout_width="wrap_content" android:layout_height="wrap_content"
+    android:layout_marginLeft="5dp"></TextView>
 	
 	<LinearLayout android:orientation="horizontal"
 		android:layout_width="fill_parent"
-		android:layout_height="wrap_content">
+		android:layout_height="wrap_content" android:layout_marginLeft="5dp">
 
-		<TextView android:layout_width="wrap_content"
+		<TextView android:layout_width="80dp"
 			android:layout_height="wrap_content" 
 			android:text="@string/username" />
 		<EditText android:id="@+id/user" 
 		  android:layout_width="wrap_content"
 			android:layout_height="wrap_content" 
-			android:layout_weight="1"/>
+			android:layout_weight="1"
+			android:layout_marginLeft="20dp"
+			android:layout_marginRight="5dp"/>
 	</LinearLayout>
 	<LinearLayout android:orientation="horizontal"
 		android:layout_width="fill_parent"
-		android:layout_height="wrap_content">
+		android:layout_height="wrap_content"
+		android:layout_marginLeft="5dp"
+		>
 
-		<TextView android:layout_width="wrap_content"
+		<TextView
 			android:layout_height="wrap_content" 
-			android:text="@string/pass" />
+			android:text="@string/pass" 
+			android:layout_width="80dp"/>
 		<EditText android:id="@+id/pass" 
 		  android:layout_width="wrap_content"
 			android:layout_height="wrap_content" 
-			android:layout_weight="1"/>
+			android:layout_weight="1"
+			android:layout_marginLeft="20dp"
+			android:layout_marginRight="5dp"/>
+	</LinearLayout>
+	<LinearLayout android:orientation="horizontal"
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content"
+		android:layout_marginLeft="5dp">
+
+	<CheckBox android:layout_width="wrap_content" android:text="Vibrating alerts" android:layout_weight="0.08" android:layout_height="wrap_content" android:id="@+id/alertCheckBox"></CheckBox>
 	</LinearLayout>
 
 	
 	<Button android:id="@+id/confirm" 
 	  android:text="@string/confirm"
 		android:layout_width="wrap_content"
-		android:layout_height="wrap_content" />
+		android:layout_height="wrap_content" 
+		android:layout_marginLeft="5dp"/>
 
 </LinearLayout>

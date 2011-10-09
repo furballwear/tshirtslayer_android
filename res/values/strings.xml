@@ -6,7 +6,7 @@
 	<string name="tshirtslayerDeliveryService">TshirtSlayer background delivery service</string>
     <string name="hello">Hello World, TShirtSlayerActivity!</string>
     <string name="app_name">TShirtSlayer</string>
-    <string name="confirm">Confirm</string>
+    <string name="confirm">Save Settings</string>
     <string name="pass">Password</string>
     <string name="itemTitle">TShirtSlayer Entry</string>
     <string name="username">Username</string>
@@ -72,7 +72,8 @@
         <item>2009</item>
         <item>2010</item>
         <item>2011</item>
-    </string-array>        
+    </string-array>
+    <string name="menu_app_clear">Clear Queue</string>        
 
 
 </resources>

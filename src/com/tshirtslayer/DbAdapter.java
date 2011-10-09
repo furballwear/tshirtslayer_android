@@ -77,6 +77,19 @@ public class DbAdapter {
 	}
 
 	/**
+	 * Deletes item
+	 */
+	public boolean deleteAllItems() {
+		return database.delete(DATABASE_TABLE, null, null) > 0;
+	}
+	/**
+	 * Deletes item
+	 */
+	public boolean deleteAllImageItems() {		
+		return database.delete(DATABASE_ATTACHMENT_TABLE, null, null) > 0;
+	}
+
+	/**
 	 * Return a Cursor over the list 
 	 * 
 	 * @return Cursor over all notes
