@@ -7,20 +7,28 @@ import java.io.IOException;
 import java.util.ArrayList;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
+import android.os.IBinder;
+import android.os.Message;
+import android.os.Messenger;
+import android.os.RemoteException;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.text.format.Time;
 import android.util.Log;
 import android.view.Menu;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -50,9 +58,44 @@ public class TshirtslayerActivity extends Activity {
 	private Intent addImageIntent;
 	private Integer addImageIntent_ID;
 	private File photoFile;
+	TextView textStatus;
 	
 	AsyncTask<Context, Integer, Boolean>  _uploadMechanism;	
+	Messenger mService = null;
+    boolean mIsBound;
+    final Messenger mMessenger = new Messenger(new IncomingHandler());
 
+    class IncomingHandler extends Handler {
+        @Override
+        public void handleMessage(Message msg) {
+            //switch (msg.what) {
+                String str1 = msg.getData().getString("str1");
+                textStatus.setText(str1);
+                Log.d("tshirtslayer", "got message"+str1);
+                super.handleMessage(msg);
+        }
+    }
+
+    private ServiceConnection mConnection = new ServiceConnection() {
+        public void onServiceConnected(ComponentName className, IBinder service) {
+            mService = new Messenger(service);
+            Log.d("tshirtslayer","service attached messenger");
+            try {
+                Message msg = Message.obtain(null, deliveryService.MSG_REGISTER_CLIENT);
+                msg.replyTo = mMessenger;
+                mService.send(msg);
+            } catch (RemoteException e) {
+                // In this case the service has crashed before we could even do anything with it
+            }
+        }
+
+        public void onServiceDisconnected(ComponentName className) {
+            // This is called when the connection with the service has been unexpectedly disconnected - process crashed.
+            mService = null;
+            textStatus.setText("Disconnected.");
+        }
+    };
+    
 	void showToast(CharSequence msg) {
 		Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
 	}
@@ -61,7 +104,11 @@ public class TshirtslayerActivity extends Activity {
 		super.onStart();
 
 	}
-	
+
+    void doBindService() {
+        bindService(new Intent(this, deliveryService.class), mConnection, Context.BIND_AUTO_CREATE);
+        mIsBound = true;
+    }
 	/** Called when the activity is first created. */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -73,8 +120,9 @@ public class TshirtslayerActivity extends Activity {
         context.startService(new Intent(context, deliveryService.class));
 		Intent i = getIntent();
 		String action = i.getAction();
-		
-	
+		textStatus = (TextView)findViewById(R.id.textStatus);
+		doBindService();
+		 
 		  cameraButton = (Button)this.findViewById(R.id.buttonFromCamera);
 		  cameraButton.setOnClickListener(new OnClickListener() {
 		    public void onClick(View v) {
@@ -196,7 +244,7 @@ public class TshirtslayerActivity extends Activity {
 		switch (requestCode) {
 		case INTENT_PICTURE_DESCRIBE:
 			if (resultCode == RESULT_OK) {
-				showToast("Your item is queued and will be sent.");
+                textStatus.setText("1 new item has been queued for entry to TShirtSlayer");
 			}
 		break;
 		case INTENT_PICTURE_GALLERY:

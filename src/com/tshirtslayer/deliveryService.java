@@ -17,6 +17,7 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Binder;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
@@ -94,7 +95,34 @@ public class deliveryService extends Service {
 	 */
 	final Messenger mMessenger = new Messenger(new IncomingHandler());
 
-	@Override
+    private void sendMessageToUI(String msgText) {
+        for (int i=mClients.size()-1; i>=0; i--) {
+            try {
+
+            	//Send data as a String
+                Bundle b = new Bundle();
+                b.putString("str1", msgText);
+                Message msg = Message.obtain(null, 1);
+                msg.setData(b);
+                mClients.get(i).send(msg);
+
+            } catch (RemoteException e) {
+                // The client is dead. Remove it from the list; we are going through the list from back to front so this is safe to do inside the loop.
+                mClients.remove(i);
+            }
+        }
+    }
+	private String getStringNumberOfItemsInQueue() {
+		dbHelper = new DbAdapter(this.getApplicationContext());
+		dbHelper.open();
+		uploadItem = dbHelper.fetchItem(0);
+		Integer items = uploadItem.getCount();
+		dbHelper.close();
+		uploadItem.close();		
+		return items.toString() + " items in the queue to upload";
+	}
+
+    @Override
 	public void onCreate() {
 		mNM = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 		Context context = this.getApplicationContext();
@@ -103,7 +131,6 @@ public class deliveryService extends Service {
 		Log.d("deliveryService", "We are running!");
 		// Display a notification about us starting.
 		_uploadMechanism = new uploadMechanism().execute(context);
-
 	}
 
 	@Override
@@ -130,6 +157,8 @@ public class deliveryService extends Service {
 			
 			context = appContext[0];
 			keep_running = true;
+			sendMessageToUI(getStringNumberOfItemsInQueue());
+
 			while(keep_running) {
 				if(isOnline()) {
 					deliverItem();					
@@ -168,7 +197,6 @@ public class deliveryService extends Service {
 		protected void onPostExecute(Long result) {
 			Log.d("tshirtslayer deliveryService","Completed another transmission!");
 		}
-
 		private void deliverItem() {
 			xmlrpcupload uploadInterface;
 			dbHelper = new DbAdapter(context);
@@ -193,7 +221,8 @@ public class deliveryService extends Service {
 						// @todo do something
 					}
 				}
-				
+				sendMessageToUI(getStringNumberOfItemsInQueue());
+	
 			}			
 			dbHelper.close();
 			uploadItem.close();
