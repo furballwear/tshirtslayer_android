@@ -18,26 +18,32 @@ public final class R {
     public static final class drawable {
         public static final int icon=0x7f020000;
         public static final int logo=0x7f020001;
+        public static final int quit=0x7f020002;
     }
     public static final class id {
-        public static final int LinearLayout01=0x7f070007;
         public static final int addButton=0x7f070006;
-        public static final int app_quit=0x7f070011;
-        public static final int app_settings=0x7f070010;
-        public static final int confirm=0x7f07000f;
+        public static final int alertCheckBox=0x7f070012;
+        public static final int app_clear=0x7f070015;
+        public static final int app_quit=0x7f070016;
+        public static final int app_settings=0x7f070014;
+        public static final int buttonFromCamera=0x7f07000a;
+        public static final int buttonFromGallery=0x7f07000c;
+        public static final int confirm=0x7f070013;
         public static final int itemTitle=0x7f070000;
         public static final int item_band=0x7f070005;
         public static final int item_title=0x7f070004;
         public static final int item_trade_type=0x7f070002;
         public static final int item_type=0x7f070001;
         public static final int item_year=0x7f070003;
-        public static final int linearLayout1=0x7f070008;
-        public static final int logo=0x7f070009;
-        public static final int mainStatus=0x7f07000a;
-        public static final int pass=0x7f07000e;
-        public static final int progressBarUpload=0x7f07000b;
-        public static final int textView1=0x7f07000c;
-        public static final int user=0x7f07000d;
+        public static final int linearLayout1=0x7f070007;
+        public static final int linearLayout2=0x7f07000d;
+        public static final int logo=0x7f07000b;
+        public static final int pass=0x7f070011;
+        public static final int progressBarUpload=0x7f07000f;
+        public static final int relativeLayout1=0x7f070008;
+        public static final int textStatus=0x7f07000e;
+        public static final int textView1=0x7f070009;
+        public static final int user=0x7f070010;
     }
     public static final class layout {
         public static final int item=0x7f030000;
@@ -62,6 +68,7 @@ public final class R {
         public static final int local_service_label=0x7f040002;
         public static final int local_service_started=0x7f040000;
         public static final int local_service_stopped=0x7f040001;
+        public static final int menu_app_clear=0x7f040012;
         public static final int menu_app_quit=0x7f04000b;
         public static final int menu_app_settings_title=0x7f04000a;
         public static final int pass=0x7f040007;
