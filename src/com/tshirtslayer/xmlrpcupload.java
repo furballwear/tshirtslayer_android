@@ -144,7 +144,7 @@ public class xmlrpcupload {
 					originalBitmap =BitmapFactory.decodeByteArray(data, 0, data.length);
 					// get aspect ratio of original image
 					scaledWidth = 1024.0; //hardcoded, yeah deal with it, its for your own good!
-					scaledHeight = scaledWidth * ( (float)originalBitmap.getWidth() / originalBitmap.getHeight());
+					scaledHeight = scaledWidth * ( originalBitmap.getHeight() / (float)originalBitmap.getWidth() );
 					
 					Log.d("tshirtslayer","Original size "+Integer.toString(originalBitmap.getWidth()) +" wide by "+Integer.toString(originalBitmap.getHeight())+" high");
 					Log.d("tshirtslayer","Rescaled to "+Double.toString(scaledWidth) +" wide by "+Double.toString(scaledHeight)+" high");
