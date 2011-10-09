@@ -65,16 +65,26 @@ public class TshirtslayerActivity extends Activity {
     boolean mIsBound;
     final Messenger mMessenger = new Messenger(new IncomingHandler());
 
-    class IncomingHandler extends Handler {
-        @Override
-        public void handleMessage(Message msg) {
-            //switch (msg.what) {
-                String str1 = msg.getData().getString("str1");
-                textStatus.setText(str1);
-                Log.d("tshirtslayer", "got message"+str1);
-                super.handleMessage(msg);
-        }
-    }
+	class IncomingHandler extends Handler {
+		@Override
+		public void handleMessage(Message msg) {
+			Log.d("tshirtslayer","Got message from service");
+			switch (msg.what) {
+			case deliveryService.MSG_SET_INT_VALUE:
+				switch (msg.arg1) {
+				case deliveryService.MSG_UPLOAD_STATUS_BUMP:
+					textStatus.setText(getStringNumberOfItemsInQueue());
+					break;
+				}
+				break;
+			case deliveryService.MSG_SET_STRING_VALUE:
+				String str1 = msg.getData().getString("str1");
+				break;
+			default:
+				super.handleMessage(msg);
+			}
+		}
+	}
 
     private ServiceConnection mConnection = new ServiceConnection() {
         public void onServiceConnected(ComponentName className, IBinder service) {
@@ -121,6 +131,8 @@ public class TshirtslayerActivity extends Activity {
 		Intent i = getIntent();
 		String action = i.getAction();
 		textStatus = (TextView)findViewById(R.id.textStatus);
+		textStatus.setText(getStringNumberOfItemsInQueue());
+		
 		doBindService();
 		 
 		  cameraButton = (Button)this.findViewById(R.id.buttonFromCamera);
@@ -244,7 +256,9 @@ public class TshirtslayerActivity extends Activity {
 		switch (requestCode) {
 		case INTENT_PICTURE_DESCRIBE:
 			if (resultCode == RESULT_OK) {
-                textStatus.setText("1 new item has been queued for entry to TShirtSlayer");
+				showToast("Your item is queued and will be sent.");
+				// bump the status information
+				textStatus.setText(getStringNumberOfItemsInQueue());
 			}
 		break;
 		case INTENT_PICTURE_GALLERY:
@@ -300,4 +314,18 @@ public class TshirtslayerActivity extends Activity {
 	        }
 	    }
 	};
+	
+
+    public String getStringNumberOfItemsInQueue() {
+    	Cursor uploadItem;
+    	DbAdapter dbHelper;
+
+		dbHelper = new DbAdapter(this.getApplicationContext());
+		dbHelper.open();
+		uploadItem = dbHelper.fetchItem(0);
+		Integer items = uploadItem.getCount();
+		dbHelper.close();
+		uploadItem.close();		
+		return items.toString() + " items in the queue to upload";
+	}
 }

@@ -36,7 +36,10 @@ public class deliveryService extends Service {
 	private Cursor uploadItem;
 	private DbAdapter dbHelper;
 	AsyncTask<Context, Integer, Boolean>  _uploadMechanism;
-
+	static final int MSG_SET_INT_VALUE = 3;
+    static final int MSG_SET_STRING_VALUE = 4;
+    static final int MSG_UPLOAD_STATUS_BUMP = 5;
+    
 	/**
 	 * Command to the service to register a client, receiving callbacks from the
 	 * service. The Message's replyTo field must be a Messenger of the client
@@ -95,6 +98,21 @@ public class deliveryService extends Service {
 	 */
 	final Messenger mMessenger = new Messenger(new IncomingHandler());
 
+	private void sendTriggerToUI(Integer triggerID) {
+        for (int i=mClients.size()-1; i>=0; i--) {
+            try {
+
+                // Send data as an Integer
+                mClients.get(i).send(Message.obtain(null, MSG_SET_INT_VALUE, triggerID, 0));
+
+
+            } catch (RemoteException e) {
+                // The client is dead. Remove it from the list; we are going through the list from back to front so this is safe to do inside the loop.
+                mClients.remove(i);
+            }
+        }
+		
+	}
     private void sendMessageToUI(String msgText) {
         for (int i=mClients.size()-1; i>=0; i--) {
             try {
@@ -112,15 +130,7 @@ public class deliveryService extends Service {
             }
         }
     }
-	private String getStringNumberOfItemsInQueue() {
-		dbHelper = new DbAdapter(this.getApplicationContext());
-		dbHelper.open();
-		uploadItem = dbHelper.fetchItem(0);
-		Integer items = uploadItem.getCount();
-		dbHelper.close();
-		uploadItem.close();		
-		return items.toString() + " items in the queue to upload";
-	}
+	
 
     @Override
 	public void onCreate() {
@@ -157,7 +167,7 @@ public class deliveryService extends Service {
 			
 			context = appContext[0];
 			keep_running = true;
-			sendMessageToUI(getStringNumberOfItemsInQueue());
+			sendTriggerToUI(MSG_UPLOAD_STATUS_BUMP);
 
 			while(keep_running) {
 				if(isOnline()) {
@@ -221,8 +231,7 @@ public class deliveryService extends Service {
 						// @todo do something
 					}
 				}
-				sendMessageToUI(getStringNumberOfItemsInQueue());
-	
+				sendTriggerToUI(MSG_UPLOAD_STATUS_BUMP);	
 			}			
 			dbHelper.close();
 			uploadItem.close();
