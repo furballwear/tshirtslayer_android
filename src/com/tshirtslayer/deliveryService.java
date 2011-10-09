@@ -148,7 +148,7 @@ public class deliveryService extends Service {
 	private class uploadMechanism extends AsyncTask<Context, Integer, Boolean> {
 		private String errorString;
 		private Context context;
-		private Boolean keep_running;
+		public Boolean keep_running;
 		
 		public boolean isOnline() {
 		    ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);

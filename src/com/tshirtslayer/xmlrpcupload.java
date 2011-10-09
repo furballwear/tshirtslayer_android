@@ -15,6 +15,9 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Bitmap.CompressFormat;
 import android.net.Uri;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -95,7 +98,12 @@ public class xmlrpcupload {
 		String encodedData;
 		data = null;
 		HashMap<?, ?> siteResponse;
-
+		Bitmap originalBitmap;
+		Bitmap scaledBitmap;
+		ByteArrayOutputStream bos = new ByteArrayOutputStream(); 
+		Double scaledWidth;
+		Double scaledHeight;
+		
 		// find out the image relating to this item
 		dbHelper.open();
 		item_id = uploadItem.getString(uploadItem
@@ -120,15 +128,35 @@ public class xmlrpcupload {
 					// just pipe the data in
 					// @todo: report how much has been uploaded % complete
 
-					Log.d("xmlrpcupload tshirtslayer", uploadImageCursor
-							.getString(1));
+					Log.d("tshirtslayer.xmlrpcupload", "Uploading image id: "+uploadImageCursor.getString(0)+" "+uploadImageCursor.getString(1));
 
 					uri = Uri.parse(uploadImageCursor.getString(1));
 					cr = context.getContentResolver();
 					is = cr.openInputStream(uri);
 					Log.d("Found item", uploadImageCursor.getString(1));
 					// Get binary bytes for encode
+					
+					// because java's base64 and string handling is such a fucking memory hog
+					// lets scale the image to a maximum width before sending it
+					// @todo: handle this upload by streaming from the file into a socket
+					
 					data = getBytesFromFile(is);
+					originalBitmap =BitmapFactory.decodeByteArray(data, 0, data.length);
+					// get aspect ratio of original image
+					scaledWidth = 1024.0; //hardcoded, yeah deal with it, its for your own good!
+					scaledHeight = scaledWidth * ( (float)originalBitmap.getWidth() / originalBitmap.getHeight());
+					
+					Log.d("tshirtslayer","Original size "+Integer.toString(originalBitmap.getWidth()) +" wide by "+Integer.toString(originalBitmap.getHeight())+" high");
+					Log.d("tshirtslayer","Rescaled to "+Double.toString(scaledWidth) +" wide by "+Double.toString(scaledHeight)+" high");
+					
+					scaledBitmap = Bitmap.createScaledBitmap(originalBitmap, scaledWidth.intValue(), scaledHeight.intValue(), false);
+					scaledBitmap.compress(CompressFormat.JPEG, 95, bos);
+					
+					originalBitmap.recycle();
+					scaledBitmap.recycle();
+					data = bos.toByteArray();
+					
+					
 					Log.d("xmlrpcupload tshirtslayer", "Read "
 							+ Integer.toString(data.length) + " bytes");
 					// filename is generated automatically on receiving end
@@ -163,8 +191,10 @@ public class xmlrpcupload {
 					if (result.contains("OK")) {
 						Log.d("xmlrpcupload tshirtslayer",
 								"Removing image from list of images to send");
+						
 						dbHelper.deleteImageItem(Integer
 								.parseInt(uploadImageCursor.getString(0)));
+						
 					} else {
 						Log.d("xmlrpcupload tshirtslayer", "Unexpected result in addImage"+result);
 						throw new RuntimeException(
