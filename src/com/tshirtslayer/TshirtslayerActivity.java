@@ -266,6 +266,7 @@ public class TshirtslayerActivity extends Activity {
 				showToast("Your item is queued and will be sent.");
 				// bump the status information
 				textStatus.setText(getStringNumberOfItemsInQueue());
+				l.clear(); // reset the list of stuff to transmit with this batch
 			}
 		break;
 		case INTENT_PICTURE_GALLERY:
