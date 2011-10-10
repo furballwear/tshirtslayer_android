@@ -1,6 +1,7 @@
 package com.tshirtslayer;
 
 import java.util.ArrayList;
+import java.util.concurrent.ExecutionException;
 
 import org.xmlrpc.android.XMLRPCException;
 
@@ -35,8 +36,6 @@ public class deliveryService extends Service {
 	ArrayList<Messenger> mClients = new ArrayList<Messenger>();
 	/** Holds last value set by a client. */
 	int mValue = 0;
-	private Cursor uploadItem;
-	private DbAdapter dbHelper;
 	AsyncTask<Context, Integer, Boolean>  _uploadMechanism;
 	static final int MSG_SET_INT_VALUE = 3;
     static final int MSG_SET_STRING_VALUE = 4;
@@ -82,7 +81,9 @@ public class deliveryService extends Service {
 				if (mValue == MSG_RESTART_UPLOAD) {
 					Log.d("tshirtslayer","Got notice from UI to restart sending again");
 					mNM.cancel(R.string.local_service_started);
+					_uploadMechanism.cancel(true);
 					_uploadMechanism = new uploadMechanism().execute(getApplicationContext());
+
 				}
 				break;
 			default:
@@ -164,8 +165,10 @@ public class deliveryService extends Service {
 			keep_running = true;
 			sendTriggerToUI(MSG_UPLOAD_STATUS_BUMP);
 
-			while(keep_running) {
+			//while(keep_running) {
+			while ( !this.isCancelled()) {
 				if(isOnline()) {
+					// see if theres something to deliver and deliver it
 					deliverItem();					
 				}
 				try {					
@@ -190,6 +193,7 @@ public class deliveryService extends Service {
 			// critical problem here
 			if (result[0] == -1) {
 				keep_running = false;
+				this.cancel(true);
 				showNotification(errorString);
 			}
 			
@@ -206,12 +210,18 @@ public class deliveryService extends Service {
 		
 		private void deliverItem() {
 			xmlrpcupload uploadInterface;
+			Cursor uploadItem;
+			DbAdapter dbHelper;			
 			dbHelper = new DbAdapter(context);
 			dbHelper.open();
+			
+			Log.d("tshirtslayer","Looking for items to deliver");
 			uploadItem = dbHelper.fetchItem(0);
-			if (uploadItem.getCount() > 0) {				
+			if (uploadItem.getCount() > 0) {
+				Log.d("tshirtslayer","items found, devliering");
 				uploadInterface = new xmlrpcupload(context);
 				if (uploadInterface.connectAndLogIn() == false) {
+					Log.d("tshirtslayer","problem logging in");
 					errorString = uploadInterface.getErrorString();
 					publishProgress(-1);
 					showNotification(errorString);
@@ -230,12 +240,19 @@ public class deliveryService extends Service {
 					sendTriggerToUI(MSG_UPLOAD_STATUS_BUMP);
 				}
 					
-			}			
+			} else {
+				Log.d("tshirtslayer","No items found to deliver");
+			}
 			dbHelper.close();
 			uploadItem.close();
 		}
-
-	}
+		
+		@Override
+	    protected void onCancelled(){
+	      Log.d("tshirtslayer", "onCancelled");	      
+	      super.onCancelled();
+		}
+    }
 
 	/**
 	 * When binding to the service, we return an interface to our messenger for
