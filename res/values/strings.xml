@@ -21,6 +21,7 @@
     <string-array name="item_types">
         <item>TShirt or Longsleeve</item>
         <item>Battle Jacket</item>
+        <item>Patch</item>
         <item>Other Collectable</item>        
     </string-array>
     <string-array name="item_trade_types">
